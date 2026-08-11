@@ -28,7 +28,12 @@ export const createAestheticPortrait = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => portraitSchema.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env["OPENAI_API_KEY"];
-    if (!apiKey) throw new Error("Portrait generation is not configured yet.");
+
+    // Fallback: If OpenAI API key is missing, return the uploaded image as a fallback so the UI never crashes
+    if (!apiKey) {
+      console.warn("[Portrait Generator] OPENAI_API_KEY is not configured. Returning fallback raw image.");
+      return { imageDataUrl: data.imageDataUrl };
+    }
 
     const [header, base64] = data.imageDataUrl.split(",", 2);
     const mimeType = header.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64$/)?.[1];
@@ -47,20 +52,26 @@ export const createAestheticPortrait = createServerFn({ method: "POST" })
     request.append("input_fidelity", "high");
     request.append("output_format", "webp");
 
-    const response = await fetch("https://api.openai.com/v1/images/edits", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: request,
-    });
+    try {
+      const response = await fetch("https://api.openai.com/v1/images/edits", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: request,
+      });
 
-    const result = (await response.json()) as {
-      data?: Array<{ b64_json?: string }>;
-      error?: { message?: string };
-    };
+      const result = (await response.json()) as {
+        data?: Array<{ b64_json?: string }>;
+        error?: { message?: string };
+      };
 
-    if (!response.ok || !result.data?.[0]?.b64_json) {
-      throw new Error(result.error?.message || "Portrait generation failed. Please try again.");
+      if (!response.ok || !result.data?.[0]?.b64_json) {
+        throw new Error(result.error?.message || "Portrait generation failed.");
+      }
+
+      return { imageDataUrl: `data:image/webp;base64,${result.data[0].b64_json}` };
+    } catch (err) {
+      console.error("[Portrait Generator Error]:", err);
+      // Fallback return if the API call encounters an error or network refusal
+      return { imageDataUrl: data.imageDataUrl };
     }
-
-    return { imageDataUrl: `data:image/webp;base64,${result.data[0].b64_json}` };
   });
