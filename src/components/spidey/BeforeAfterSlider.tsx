@@ -5,8 +5,9 @@ import { ImagePlus, Loader2, MoveHorizontal } from "lucide-react";
 
 import { createAestheticPortrait } from "@/lib/aesthetic-portrait.functions";
 
-const RAW_SRC = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-const EDITED_SRC = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4";
+// High quality working video fallbacks
+const RAW_SRC = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+const EDITED_SRC = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4";
 
 export function BeforeAfterSlider() {
   const createPortrait = useServerFn(createAestheticPortrait);
