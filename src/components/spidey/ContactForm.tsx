@@ -6,9 +6,11 @@ import { toast } from "sonner";
 
 type Errors = Partial<Record<"name" | "email" | "details", string>>;
 
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+// Added fallback values directly so the form always works
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_j96uhgb";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_7184c5n";
+// Replace "YOUR_PUBLIC_KEY_HERE" with your actual EmailJS Public Key if VITE_EMAILJS_PUBLIC_KEY isn't set in env
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "6mYCwlp3n5lfaYS6B";
 const RECIPIENT_EMAIL = "spideycutsedits@gmail.com";
 
 export function ContactForm() {
@@ -32,8 +34,8 @@ export function ContactForm() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-      toast.error("Email delivery is not configured yet.");
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY_HERE") {
+      toast.error("Email delivery is not configured yet. Please check your EmailJS Public Key.");
       return;
     }
 
