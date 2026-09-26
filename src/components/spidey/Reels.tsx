@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Play, TrendingUp, X } from "lucide-react";
 
@@ -19,6 +19,7 @@ type Reel = {
   embed: string;
 };
 
+// Direct public URLs without tokens
 const REELS: Reel[] = [
   {
     id: "outings",
@@ -26,7 +27,7 @@ const REELS: Reel[] = [
     tag: "OUTINGS",
     image: fitness,
     video:
-      "https://oacowsqylkkrkrmufovi.supabase.co/storage/v1/object/sign/videos/lv_0_20260810145418.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mMjdhYTgyOC1kMTEwLTQ2YzItOWI0ZS04NzBmOGExNmY4MjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2aWRlb3MvbHZfMF8yMDI2MDgxMDE0NTQxOC5tcDQiLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg2MzU3ODU3LCJleHAiOjE5NDQwMzc4NTd9.1Zi_uv_W5d6ug1r1MA_I72xZ-Kfew4oKT9AfRrvBs_4",
+      "https://wwrjnqzvhjdfyqbnzgnm.supabase.co/storage/v1/object/public/videos/lv_0_20260810145418.mp4",
     views: "4.2M Views",
     growth: "+18k Followers",
     embed: "https://www.instagram.com/reel/C1sQb3nO0Zs/embed",
@@ -37,7 +38,7 @@ const REELS: Reel[] = [
     tag: "MEMORIES",
     image: fashion,
     video:
-     "https://oacowsqylkkrkrmufovi.supabase.co/storage/v1/object/sign/videos/lv_7590360326604950837_20260418225752.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mMjdhYTgyOC1kMTEwLTQ2YzItOWI0ZS04NzBmOGExNmY4MjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2aWRlb3MvbHZfNzU5MDM2MDMyNjYwNDk1MDgzN18yMDI2MDQxODIyNTc1Mi5tcDQiLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg2MzU3ODk5LCJleHAiOjE5NDQwMzc4OTl9.fpVQ8ZaFVHC0BKK64xUXDMUyrOy_QZnEQS2MH_csDa0", 
+      "https://wwrjnqzvhjdfyqbnzgnm.supabase.co/storage/v1/object/public/videos/lv_7590360326604950837_20260418225752.mp4",
     views: "2.8M Views",
     growth: "+11k Followers",
     embed: "https://www.instagram.com/reel/C2VuqRXNKQz/embed",
@@ -48,7 +49,7 @@ const REELS: Reel[] = [
     tag: "CINI CUTS",
     image: tech,
     video:
-      "https://oacowsqylkkrkrmufovi.supabase.co/storage/v1/object/sign/videos/Kabii.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mMjdhYTgyOC1kMTEwLTQ2YzItOWI0ZS04NzBmOGExNmY4MjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2aWRlb3MvS2FiaWkubXA0Iiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NjM1NzgxMiwiZXhwIjoxOTQ0MDM3ODEyfQ.KIop3XAu23xTxBnHfgrffDhRdE7nTMRwuZCmqmGA2pQ",
+      "https://wwrjnqzvhjdfyqbnzgnm.supabase.co/storage/v1/object/public/videos/Kabii.mp4",
     featured: true,
     views: "6.1M Views",
     growth: "+27k Followers",
@@ -57,6 +58,26 @@ const REELS: Reel[] = [
 ];
 
 function ReelCard({ reel, onOpen, index }: { reel: Reel; onOpen: () => void; index: number }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    // Direct DOM property assignment required by iOS Safari
+    el.muted = true;
+    el.setAttribute("muted", "");
+    el.setAttribute("playsinline", "");
+    el.setAttribute("webkit-playsinline", "true");
+
+    const playPromise = el.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Autoplay restricted (e.g. low power mode)
+      });
+    }
+  }, []);
+
   return (
     <motion.button
       type="button"
@@ -74,7 +95,9 @@ function ReelCard({ reel, onOpen, index }: { reel: Reel; onOpen: () => void; ind
     >
       {reel.video ? (
         <video
+          ref={videoRef}
           src={reel.video}
+          poster={reel.image}
           autoPlay
           muted
           loop
